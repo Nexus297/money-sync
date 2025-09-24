@@ -1,6 +1,284 @@
 {% extends 'base.html' %}
 {% block title %}Settings - Money Sync{% endblock %}
 {% block content %}
-<h2>Settings</h2>
-<p>Manage your preferences and account settings here.</p>
+<style>
+    .settings-container {
+        max-width: 900px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2.5em;
+    }
+
+    .settings-card {
+        background: #181818;
+        border-radius: 1.5em;
+        box-shadow: 0 4px 32px 0 rgba(0, 0, 0, 0.18);
+        padding: 2.5em 2em 2em 2em;
+        margin-bottom: 0;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.3s;
+        color: #ffd700;
+    }
+
+    .settings-card:hover {
+        box-shadow: 0 8px 48px 0 rgba(255, 215, 0, 0.18);
+    }
+
+    .settings-card h3 {
+        color: #ffd700;
+        margin-top: 0;
+        margin-bottom: 1.2em;
+        font-size: 1.35em;
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+
+    .settings-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.8em;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2em 3em;
+    }
+
+    .profile-grid label {
+        margin-bottom: 0.6em;
+        font-weight: 500;
+        color: #ffd700;
+    }
+
+    .profile-grid input {
+        width: 100%;
+    }
+
+    @media (max-width: 700px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .settings-form input[type="text"],
+    .settings-form input[type="email"],
+    .settings-form input[type="number"],
+    .settings-form input[type="password"] {
+        background: #111;
+        border: 1px solid #ffd700;
+        border-radius: 1em;
+        padding: 0.7em 1em;
+        color: #ffd700;
+        font-size: 1.05em;
+        transition: background 0.4s, box-shadow 0.4s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+    }
+
+    .settings-form input:focus {
+        background: #181818;
+        outline: none;
+        box-shadow: 0 4px 24px 0 rgba(255, 215, 0, 0.18);
+    }
+
+    .settings-form button {
+        background: #ffd700;
+        color: #181818;
+        border: none;
+        border-radius: 1em;
+        padding: 0.7em 2em;
+        font-weight: bold;
+        font-size: 1.08em;
+        align-self: flex-end;
+        margin-top: 0.5em;
+        transition: background 0.3s, color 0.3s, box-shadow 0.4s;
+        box-shadow: 0 2px 12px rgba(255, 215, 0, 0.18);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .settings-form button:hover {
+        background: #181818;
+        color: #ffd700;
+        border: 1px solid #ffd700;
+        box-shadow: 0 0 24px 4px rgba(255, 215, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.22);
+    }
+
+    .delete-account-btn {
+        background: #ffd700 !important;
+        color: #181818 !important;
+        border: none;
+        border-radius: 1em;
+        padding: 0.7em 2em;
+        font-weight: bold;
+        font-size: 1.08em;
+        transition: background 0.3s, color 0.3s, box-shadow 0.4s;
+        box-shadow: 0 2px 12px rgba(255, 215, 0, 0.15);
+        margin-top: 0.5em;
+        align-self: flex-end;
+    }
+
+    .delete-account-btn:hover {
+        background: #181818 !important;
+        color: #ffd700 !important;
+        border: 1px solid #ffd700;
+        box-shadow: 0 0 24px 4px rgba(255, 215, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.22);
+    }
+
+    .custom-checkbox-group {
+        display: flex;
+        flex-direction: row;
+        gap: 2em;
+        margin-bottom: 1em;
+    }
+
+    @media (max-width: 700px) {
+        .custom-checkbox-group {
+            flex-direction: column;
+            gap: 1em;
+        }
+    }
+
+    .custom-checkbox {
+        position: relative;
+        padding-left: 2.2em;
+        cursor: pointer;
+        font-size: 1.08em;
+        user-select: none;
+        color: #ffd700;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+    }
+
+    .custom-checkbox input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+
+    .custom-checkbox .checkmark {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 1.4em;
+        width: 1.4em;
+        background: #111;
+        border: 2px solid #ffd700;
+        border-radius: 0.5em;
+        transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        box-shadow: 0 2px 8px rgba(255, 215, 0, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custom-checkbox input:checked~.checkmark {
+        background: #ffd700;
+        border-color: #181818;
+        box-shadow: 0 0 8px 2px rgba(255, 215, 0, 0.18);
+    }
+
+    .custom-checkbox .checkmark:after {
+        content: "";
+        display: none;
+        position: absolute;
+        left: 0.38em;
+        top: 0.12em;
+        width: 0.35em;
+        height: 0.7em;
+        border: solid #181818;
+        border-width: 0 0.18em 0.18em 0;
+        border-radius: 0.1em;
+        transform: rotate(45deg);
+    }
+
+    .custom-checkbox input:checked~.checkmark:after {
+        display: block;
+    }
+
+    .account-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+</style>
+<div class="settings-container">
+
+    <div class="settings-card">
+        <h3><span>👤</span> Profile Information</h3>
+        <form class="settings-form" method="post" action="/update_profile">
+            <div class="profile-grid">
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" value="{{ user.name if user else '' }}" required>
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" value="{{ user.email if user else '' }}" required>
+                </div>
+                <div>
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" value="{{ user.age if user else '' }}" min="0">
+                </div>
+                <div>
+                    <label for="income">Income</label>
+                    <input type="number" id="income" name="income" value="{{ user.income if user else '' }}" min="0"
+                        step="0.01">
+                </div>
+            </div>
+            <button type="submit">Update Profile</button>
+        </form>
+    </div>
+
+    <div class="settings-card">
+        <h3><span>🔒</span> Change Password</h3>
+        <form class="settings-form" method="post" action="/change_password">
+            <label for="current_password">Current Password</label>
+            <input type="password" id="current_password" name="current_password" required>
+            <label for="new_password">New Password</label>
+            <input type="password" id="new_password" name="new_password" required>
+            <label for="confirm_password">Confirm New Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+            <button type="submit">Change Password</button>
+        </form>
+    </div>
+
+    <div class="settings-card">
+        <h3><span>🔔</span> Notification Preferences</h3>
+        <form class="settings-form" method="post" action="/update_notifications">
+            <div class="custom-checkbox-group">
+                <label class="custom-checkbox">
+                    <input type="checkbox" id="email_notifications" name="email_notifications" {% if user and
+                        user.email_notifications %}checked{% endif %}>
+                    <span class="checkmark"></span>
+                    Email Notifications
+                </label>
+                <label class="custom-checkbox">
+                    <input type="checkbox" id="sms_notifications" name="sms_notifications" {% if user and
+                        user.sms_notifications %}checked{% endif %}>
+                    <span class="checkmark"></span>
+                    SMS Notifications
+                </label>
+            </div>
+            <button type="submit">Save Preferences</button>
+        </form>
+    </div>
+
+    <div class="settings-card account-actions">
+        <h3 style="color:#ffd700;"><span>⚠</span> Account Actions</h3>
+        <form class="settings-form" method="post" action="/delete_account"
+            onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+            <button type="submit" class="delete-account-btn">Delete Account</button>
+        </form>
+    </div>
+</div>
 {% endblock %}

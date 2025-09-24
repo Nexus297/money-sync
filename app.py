@@ -101,11 +101,63 @@ def analytics():
         return redirect(url_for('home'))
     return render_template('analytics.html')
 
+
+# Update profile
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    name = request.form.get('name')
+    email = request.form.get('email')
+    age = request.form.get('age')
+    income = request.form.get('income')
+    # Check for duplicate email (if changed)
+    if email != user.email and User.query.filter_by(email=email).first():
+        return render_template('settings.html', user=user, error='Email already registered.')
+    user.name = name
+    user.email = email
+    user.age = int(age) if age else user.age
+    user.income = float(income) if income else user.income
+    db.session.commit()
+    return render_template('settings.html', user=user, success='Profile updated successfully.')
+
+# Change password
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+    if not check_password_hash(user.password_hash, current_password):
+        return render_template('settings.html', user=user, error='Current password is incorrect.')
+    if new_password != confirm_password:
+        return render_template('settings.html', user=user, error='New passwords do not match.')
+    if not new_password:
+        return render_template('settings.html', user=user, error='New password cannot be empty.')
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    return render_template('settings.html', user=user, success='Password changed successfully.')
+
+# Delete account
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    db.session.delete(user)
+    db.session.commit()
+    session.pop('user_id', None)
+    return redirect(url_for('signup'))
+
 @app.route('/settings')
 def settings():
     if not session.get('user_id'):
         return redirect(url_for('home'))
-    return render_template('settings.html')
+    user = User.query.get(session['user_id'])
+    return render_template('settings.html', user=user)
 
 
 @app.route('/profile')
