@@ -1,6 +1,147 @@
 {% extends 'base.html' %}
-{% block title %}Interactive Mode - Money Sync{% endblock %}
+{% block title %}Chatbot - Money Sync{% endblock %}
 {% block content %}
-<h2>Interactive Mode</h2>
-<p>Interact with the app using text or audio. (Feature coming soon!)</p>
+<style>
+  .layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+    overflow: hidden;
+  }
+  .chatbot-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1a1a1a; /* Black background */
+    overflow: hidden;
+    border-radius: 16px; /* Rounded corners */
+    margin-top: 32px;
+  }
+  .chatbot-header {
+    background: #d4af37; /* Golden color */
+    color: #1a1a1a; /* Black text */
+    padding: 16px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 16px 16px 0 0; /* Rounded top corners */
+  }
+  .chatbot-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #1a1a1a; /* Black background */
+  }
+  .chatbot-message {
+    max-width: 80%;
+    padding: 10px 16px;
+    border-radius: 18px; /* Rounded corners for messages */
+    font-size: 1rem;
+    line-height: 1.4;
+    word-break: break-word;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .chatbot-message.user {
+    align-self: flex-end;
+    background: #d4af37; /* Golden color */
+    color: #1a1a1a; /* Black text */
+    border-bottom-right-radius: 4px;
+  }
+  .chatbot-message.bot {
+    align-self: flex-start;
+    background: #333333; /* Dark gray for bot messages */
+    color: #d4af37; /* Golden text */
+    border: 1px solid #d4af37; /* Golden border */
+    border-bottom-left-radius: 4px;
+    padding-left: 20px;
+  }
+  .chatbot-input-area {
+    display: flex;
+    padding: 12px;
+    background: #333333; /* Dark gray background */
+    border-top: 1px solid #d4af37; /* Golden border */
+    border-radius: 0 0 16px 16px; /* Rounded bottom corners */
+  }
+  .chatbot-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #d4af37; /* Golden border */
+    border-radius: 8px; /* Rounded corners */
+    font-size: 1rem;
+    outline: none;
+    background: #1a1a1a; /* Black background */
+    color: #d4af37; /* Golden text */
+  }
+  .chatbot-send-btn {
+    margin-left: 8px;
+    background: #d4af37; /* Golden background */
+    color: #1a1a1a; /* Black text */
+    border: none;
+    border-radius: 8px; /* Rounded corners */
+    padding: 0 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .chatbot-send-btn:hover {
+    background: #b8860b; /* Darker golden color */
+  }
+</style>
+
+<div class="layout">
+  <!-- Profile button is rendered by base.html in the top right -->
+  <div class="chatbot-container">
+    <div class="chatbot-header">
+      Money Sync Chatbot
+    </div>
+    <div class="chatbot-messages" id="chatbot-messages">
+      <div class="chatbot-message bot">Hi! How can I help you with your finances today?</div>
+    </div>
+    <form class="chatbot-input-area" id="chatbot-form" autocomplete="off" onsubmit="return false;">
+      <input type="text" id="chatbot-input" class="chatbot-input" placeholder="Type your message..." autofocus />
+      <button type="submit" class="chatbot-send-btn">Send</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('chatbot-form');
+  const input = document.getElementById('chatbot-input');
+  const messages = document.getElementById('chatbot-messages');
+
+  form.addEventListener('submit', function() {
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+    addMessage(userMsg, 'user');
+    input.value = '';
+    setTimeout(() => {
+      addMessage(getBotReply(userMsg), 'bot');
+    }, 700);
+  });
+
+  function addMessage(text, sender) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'chatbot-message ' + sender;
+    msgDiv.textContent = text;
+    messages.appendChild(msgDiv);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function getBotReply(userMsg) {
+    // Placeholder bot logic
+    if (userMsg.toLowerCase().includes('budget')) {
+      return "Let's talk about budgeting! What would you like to know?";
+    }
+    if (userMsg.toLowerCase().includes('hello') || userMsg.toLowerCase().includes('hi')) {
+      return "Hello! How can I assist you today?";
+    }
+    if (userMsg.toLowerCase().includes('expense')) {
+      return "You can upload your expenses or ask for analytics!";
+    }
+    return "I'm here to help with your money management. Try asking about budgets, expenses, or analytics!";
+  }
+</script>
 {% endblock %}
