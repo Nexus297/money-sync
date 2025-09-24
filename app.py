@@ -12,6 +12,8 @@ app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 db = SQLAlchemy(app)
 
+
+# --- Models ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
@@ -19,6 +21,69 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=False)
     income = db.Column(db.Float, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    expenses = db.Column(db.Float, nullable=True)
+    savings = db.Column(db.Float, nullable=True)
+    debts = db.Column(db.Float, nullable=True)
+    assets = db.Column(db.Float, nullable=True)
+    insurance = db.Column(db.String(256), nullable=True)
+    goals = db.Column(db.String(256), nullable=True)
+    conversation_state = db.Column(db.String(64), nullable=True)
+    conversation_data = db.Column(db.Text, nullable=True)
+
+class Upload(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    filename = db.Column(db.String(256), nullable=False)
+    mimetype = db.Column(db.String(128), nullable=True)
+    size = db.Column(db.Integer, nullable=True)
+    upload_time = db.Column(db.DateTime, server_default=db.func.now())
+
+class Conversation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    state = db.Column(db.String(64), nullable=True)
+    data = db.Column(db.Text, nullable=True)
+
+# --- Schema migration helper ---
+def ensure_schema():
+    # Add missing columns if not present (for SQLite dev only)
+    import sqlite3
+    db_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///','')
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+    # Add columns if missing
+    columns = [
+        ('expenses', 'REAL'),
+        ('savings', 'REAL'),
+        ('debts', 'REAL'),
+        ('assets', 'REAL'),
+        ('insurance', 'TEXT'),
+        ('goals', 'TEXT'),
+        ('conversation_state', 'TEXT'),
+        ('conversation_data', 'TEXT')
+    ]
+    for col, typ in columns:
+        try:
+            cur.execute(f'ALTER TABLE user ADD COLUMN {col} {typ}')
+        except Exception:
+            pass
+    # Create Upload and Conversation tables if not exist
+    cur.execute('''CREATE TABLE IF NOT EXISTS upload (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        filename TEXT,
+        mimetype TEXT,
+        size INTEGER,
+        upload_time DATETIME DEFAULT CURRENT_TIMESTAMP
+    )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS conversation (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        state TEXT,
+        data TEXT
+    )''')
+    conn.commit()
+    conn.close()
 
 
 # Signup route and logic
@@ -215,7 +280,144 @@ def upload_file():
 def static_files(filename):
     return send_from_directory('static', filename)
 
+
+# --- Dialogflow & Chatbot Integration ---
+from flask import session
+import base64, json
+
+def dialogflow_text_response(text):
+    return jsonify({"fulfillmentText": text})
+
+def dialogflow_json_response(data):
+    return jsonify(data)
+
+def get_user_by_session():
+    uid = session.get('user_id')
+    if not uid:
+        return None
+    return User.query.get(uid)
+
+def update_user_context(user, field, value):
+    if not user:
+        return
+    setattr(user, field, value)
+    db.session.commit()
+
+def get_next_required_field(user):
+    # Order: income, expenses, savings, debts, assets, insurance, goals
+    fields = ['income','expenses','savings','debts','assets','insurance','goals']
+    for f in fields:
+        if getattr(user, f, None) in (None, '', 0):
+            return f
+    return None
+
+def generate_personalized_plan(user):
+    # Simple plan logic for demo
+    plan = f"""
+Hi {user.name}, here's your personalized money plan:
+
+1. Budget: Allocate 50% to needs, 30% to wants, 20% to savings.
+2. Emergency Fund: Aim for 6 months of expenses ({(user.expenses or 0)*6:.0f}).
+3. Investments: Start with SIPs or PPF for long-term growth.
+4. Insurance: {user.insurance or 'Consider health/life insurance.'}
+5. Debt: Keep debt-to-income below 30%. Current: {user.debts or 0}.
+6. Goals: {user.goals or 'Set clear financial goals.'}
+
+Stay consistent and review monthly!
+"""
+    return plan
+
+def generate_summary(user):
+    # Friendly summary for lower-income audiences
+    summary = {
+        "name": user.name,
+        "income": user.income,
+        "expenses": user.expenses,
+        "savings": user.savings,
+        "debts": user.debts,
+        "assets": user.assets,
+        "insurance": user.insurance,
+        "goals": user.goals,
+        "recommendations": [
+            "Try to save at least 10% of your income.",
+            "Build an emergency fund for 3-6 months of expenses.",
+            "Avoid new debts if possible.",
+            "Review your spending monthly."
+        ]
+    }
+    return summary
+
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    data = request.get_json(force=True)
+    intent = data.get('queryResult', {}).get('intent', {}).get('displayName')
+    params = data.get('queryResult', {}).get('parameters', {})
+    user_id = session.get('user_id')
+    user = User.query.get(user_id) if user_id else None
+    # Map Dialogflow params to user fields
+    param_map = {
+        'income': 'income',
+        'expenses': 'expenses',
+        'savings': 'savings',
+        'debts': 'debts',
+        'assets': 'assets',
+        'insurance': 'insurance',
+        'goals': 'goals'
+    }
+    # Save params
+    for k, v in params.items():
+        if k in param_map and user:
+            update_user_context(user, param_map[k], v)
+    # Handle file upload (base64 string in params['file'])
+    if 'file' in params and user:
+        file_b64 = params['file']
+        if file_b64:
+            file_bytes = base64.b64decode(file_b64)
+            filename = f"upload_{user.id}_{int(os.urandom(2).hex(),16)}.bin"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            with open(filepath, 'wb') as f:
+                f.write(file_bytes)
+            upload = Upload(user_id=user.id, filename=filename, mimetype='application/octet-stream', size=len(file_bytes))
+            db.session.add(upload)
+            db.session.commit()
+    # Step-by-step context
+    next_field = get_next_required_field(user) if user else None
+    if next_field:
+        return dialogflow_text_response(f"Please provide your {next_field}.")
+    # Intent handlers
+    if intent == 'Future Plan' and user:
+        plan = generate_personalized_plan(user)
+        return dialogflow_text_response(plan)
+    if intent == 'Summary' and user:
+        summary = generate_summary(user)
+        return dialogflow_json_response(summary)
+    return dialogflow_text_response("Thank you! How else can I help?")
+
+# --- Local chat endpoint for frontend ---
+@app.route('/chat', methods=['POST'])
+def chat():
+    user = get_user_by_session()
+    if not user:
+        return jsonify({'error': 'Not logged in'}), 401
+    msg = request.json.get('message')
+    # Simulate Dialogflow webhook call
+    # For demo, treat message as intent if matches, else as value for next field
+    if msg.lower() in ['future plan','plan']:
+        plan = generate_personalized_plan(user)
+        return jsonify({'reply': plan})
+    if msg.lower() in ['summary']:
+        summary = generate_summary(user)
+        return jsonify({'reply': json.dumps(summary, indent=2)})
+    # Otherwise, treat as value for next field
+    next_field = get_next_required_field(user)
+    if next_field:
+        update_user_context(user, next_field, msg)
+        return jsonify({'reply': f"Saved your {next_field}. Anything else?"})
+    return jsonify({'reply': "I'm here to help! Type 'plan' or 'summary' for more."})
+
+# --- Startup ---
 if __name__ == '__main__':
     with app.app_context():
+        ensure_schema()
         db.create_all()
     app.run(debug=True)

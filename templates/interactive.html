@@ -112,14 +112,22 @@
   const input = document.getElementById('chatbot-input');
   const messages = document.getElementById('chatbot-messages');
 
-  form.addEventListener('submit', function() {
+  form.addEventListener('submit', async function() {
     const userMsg = input.value.trim();
     if (!userMsg) return;
     addMessage(userMsg, 'user');
     input.value = '';
-    setTimeout(() => {
-      addMessage(getBotReply(userMsg), 'bot');
-    }, 700);
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg })
+      });
+      const data = await res.json();
+      addMessage(data.reply || 'No response from server.', 'bot');
+    } catch (e) {
+      addMessage('Error contacting server.', 'bot');
+    }
   });
 
   function addMessage(text, sender) {
@@ -128,20 +136,6 @@
     msgDiv.textContent = text;
     messages.appendChild(msgDiv);
     messages.scrollTop = messages.scrollHeight;
-  }
-
-  function getBotReply(userMsg) {
-    // Placeholder bot logic
-    if (userMsg.toLowerCase().includes('budget')) {
-      return "Let's talk about budgeting! What would you like to know?";
-    }
-    if (userMsg.toLowerCase().includes('hello') || userMsg.toLowerCase().includes('hi')) {
-      return "Hello! How can I assist you today?";
-    }
-    if (userMsg.toLowerCase().includes('expense')) {
-      return "You can upload your expenses or ask for analytics!";
-    }
-    return "I'm here to help with your money management. Try asking about budgets, expenses, or analytics!";
   }
 </script>
 {% endblock %}
