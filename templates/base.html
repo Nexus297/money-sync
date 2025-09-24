@@ -6,6 +6,12 @@
     <title>{% block title %}Money Sync{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+    .with-sidebar {
+      margin-left: 250px;
+    }
+    .no-sidebar {
+      margin-left: 0;
+    }
     /* Ensure sidebar brand is gold */
     #sidebar .navbar-brand {
       color: var(--secondary-color) !important;
@@ -105,6 +111,8 @@
 </head>
 <body>
 <div class="d-flex" style="min-height: 100vh;">
+  {% set show_sidebar = not (request.path in ['/', '/login', '/signup']) %}
+  {% if show_sidebar %}
   <!-- Sidebar -->
   <nav id="sidebar" class="sidebar">
     <div class="offcanvas-header pt-3 pb-2 px-3 d-flex justify-content-between align-items-center">
@@ -115,7 +123,7 @@
     </div>
     <div class="offcanvas-body p-0">
       <ul class="nav flex-column mb-auto">
-        <li class="nav-item"><a class="nav-link px-3 py-2 {% if active=='login' %}active{% endif %}" href="/login"><i class="bi bi-box-arrow-in-right"></i> <span>Login / Signup</span></a></li>
+  <!-- Login/Signup removed from sidebar -->
         <li class="nav-item"><a class="nav-link px-3 py-2 {% if active=='dashboard' %}active{% endif %}" href="/dashboard"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
         <li class="nav-item"><a class="nav-link px-3 py-2 {% if active=='interactive' %}active{% endif %}" href="/interactive"><i class="bi bi-mic"></i> <span>Interactive Mode</span></a></li>
         <li class="nav-item"><a class="nav-link px-3 py-2 {% if active=='upload' %}active{% endif %}" href="/upload"><i class="bi bi-upload"></i> <span>Document Upload</span></a></li>
@@ -126,23 +134,22 @@
 
     </div>
   </nav>
+  {% endif %}
   <!-- Main content -->
-  <div class="flex-grow-1" id="mainContent" style="margin-left: 250px; min-width:0; transition: margin-left 0.2s; background: var(--primary-color); color: var(--secondary-color);">
+  <div class="flex-grow-1 {% if show_sidebar %}with-sidebar{% else %}no-sidebar{% endif %}" id="mainContent" style="min-width:0; transition: margin-left 0.2s; background: var(--primary-color); color: var(--secondary-color);">
+    
     <div class="container-fluid py-3">
-      <div class="d-flex justify-content-end align-items-center mb-3">
-        {% if session.get('user_id') %}
-          <div class="dropdown">
-            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="color: var(--secondary-color);">
-              <i class="bi bi-person-circle me-2"></i> <span>Profile</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-              <li><a class="dropdown-item" href="#">My Profile</a></li>
-              <li><a class="dropdown-item" href="/logout">Logout</a></li>
-            </ul>
-          </div>
-        {% else %}
-          <a href="/login" class="btn btn-primary me-2">Login</a>
-          <a href="/signup" class="btn btn-outline-primary">Sign Up</a>
+      <div class="position-relative mb-3">
+        {% if session.get('user_id') and request.path not in ['/', '/login', '/signup'] %}
+        <div class="dropdown position-absolute end-0 top-0">
+          <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle"></i> Profile
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+            <li><a class="dropdown-item" href="/profile">My Profile</a></li>
+            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+          </ul>
+        </div>
         {% endif %}
       </div>
       {% block content %}{% endblock %}

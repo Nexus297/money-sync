@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Profile | Money Sync{% endblock %}
+{% block content %}
+{% set show_sidebar = not (request.path in ['/', '/login', '/signup']) %}
+<div class="container py-4 {% if show_sidebar %}with-sidebar{% else %}no-sidebar{% endif %}" style="max-width: 900px;">
+  <h2 class="mb-4">My Profile</h2>
+  <div class="card bg-dark text-light" style="max-width: 500px;">
+    <div class="card-body">
+      <p><strong>Name:</strong> {{ user.name }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Age:</strong> {{ user.age }}</p>
+      <p><strong>Income:</strong> ${{ user.income }}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

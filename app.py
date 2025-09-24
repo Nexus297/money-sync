@@ -1,5 +1,6 @@
 
 from flask import Flask, render_template, request, jsonify, send_from_directory
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -17,6 +18,7 @@ class User(db.Model):
     email = db.Column(db.String(120), nullable=False)
     age = db.Column(db.Integer, nullable=False)
     income = db.Column(db.Float, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
 
 
 # Signup route and logic
@@ -28,12 +30,14 @@ def signup():
         age = request.form.get('age')
         income = request.form.get('income')
         password = request.form.get('password')
+        if not password:
+            return render_template('signup.html', error='Password is required.')
         # Check if user already exists
         existing = User.query.filter_by(email=email).first()
         if existing:
             return render_template('signup.html', error='Email already registered.')
-        # Add user (no password storage for demo, add if needed)
-        user = User(name=name, email=email, age=int(age), income=float(income))
+        password_hash = generate_password_hash(password) if password else None
+        user = User(name=name, email=email, age=int(age), income=float(income), password_hash=password_hash)
         db.session.add(user)
         db.session.commit()
         return redirect(url_for('login'))
@@ -56,11 +60,12 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         user = User.query.filter_by(email=email).first()
-        if user:
-            session['user_id'] = user.id
-            return redirect(url_for('dashboard'))
-        else:
-            return render_template('login.html', error='Invalid email or password.')
+        if not user:
+            return render_template('login.html', error='Email not found. Please sign up first.')
+        if not check_password_hash(user.password_hash, password):
+            return render_template('login.html', error='Incorrect password.')
+        session['user_id'] = user.id
+        return redirect(url_for('dashboard'))
     if session.get('user_id'):
         return redirect(url_for('dashboard'))
     return render_template('login.html')
@@ -73,19 +78,19 @@ def logout():
 @app.route('/dashboard')
 def dashboard():
     if not session.get('user_id'):
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
     return render_template('dashboard.html')
 
 @app.route('/interactive')
 def interactive():
     if not session.get('user_id'):
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
     return render_template('interactive.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if not session.get('user_id'):
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
     if request.method == 'POST':
         return upload_file()
     return render_template('upload.html')
@@ -93,14 +98,22 @@ def upload():
 @app.route('/analytics')
 def analytics():
     if not session.get('user_id'):
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
     return render_template('analytics.html')
 
 @app.route('/settings')
 def settings():
     if not session.get('user_id'):
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
     return render_template('settings.html')
+
+
+@app.route('/profile')
+def profile():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    return render_template('profile.html', user=user)
 
 @app.route('/contact')
 def contact():

@@ -1,23 +1,24 @@
 {% extends 'base.html' %}
-{% block title %}Login / Signup - Money Sync{% endblock %}
+{% block title %}Login - Money Sync{% endblock %}
 {% block content %}
-<h2>Login / Signup</h2>
-<form class="mb-3" method="POST">
-  <div class="mb-3">
-    <label for="email" class="form-label">Email address</label>
-    <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+<form class="mb-3 p-4 rounded shadow-sm" method="POST" style="max-width: 400px; margin: auto; background: #000; color: #FFD700;">
+  <h2 class="text-center mb-4" style="color: #FFD700;">Login</h2>
+  <div style="border: 2px solid #FFD700; border-radius: 12px; padding: 24px; background: #000;">
+    <div class="mb-3">
+      <label for="email" class="form-label">Email address</label>
+      <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="Enter email" required style="border-radius: 8px;">
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Password" required style="border-radius: 8px;">
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Login</button>
+    {% if error %}
+      <div class="alert alert-danger mt-3">{{ error }}</div>
+    {% endif %}
+    <div class="mt-3 text-center">
+      Don't have an account? <a href="/signup" style="color: #FFD700;">Sign up here</a>
+    </div>
   </div>
-  <div class="mb-3">
-    <label for="password" class="form-label">Password</label>
-    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
-  </div>
-  <button type="submit" class="btn btn-primary">Login</button>
-  <a href="/signup" class="btn btn-secondary ms-2">Sign Up</a>
 </form>
-  {% if error %}
-    <div class="alert alert-danger mt-3">{{ error }}</div>
-  {% endif %}
-  <div class="mt-3 text-center">
-    Don't have an account? <a href="/signup">Sign up here</a>
-  </div>
 {% endblock %}
