@@ -1,12 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}Document Upload - Money Sync{% endblock %}
 {% block content %}
-<h2>Document Upload</h2>
-<form enctype="multipart/form-data">
-  <div class="mb-3">
-    <label for="formFile" class="form-label">Upload PDF or CSV</label>
-    <input class="form-control" type="file" id="formFile" accept=".pdf,.csv">
-  </div>
-  <button type="submit" class="btn btn-primary">Upload</button>
-</form>
-{% endblock %}
+<div class="card" style="padding: 20px; border: 1px solid #2563eb; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 50px auto; background-color: #2563eb; color: #fff; max-width: 600px;">
+  <h2>Document Upload</h2>
+  <form enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="documentType" class="form-label">Select Document Type</label>
+      <select class="form-select" id="documentType" name="documentType">
+        <option value="itr">ITR</option>
+        <option value="bank_statement">Bank Statement</option>
+        <option value="loan_statement">Loan Statement</option>
+        <option value="insurance">Insurance</option>
+        <option value="assets_owned">Assets Owned</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="formFile" class="form-label">Upload PDF or CSV</label>
+      <input class="form-control" type="file" id="formFile" name="file" accept=".pdf,.csv">
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+</div>
+{%endblock%}

@@ -1,6 +1,218 @@
 {% extends 'base.html' %}
-{% block title %}Analytics/Insights - Money Sync{% endblock %}
+{% block title %}Analytics & Insights - MoneySync{% endblock %}
 {% block content %}
-<h2>Analytics / Insights</h2>
-<p>See your financial analytics and insights here. (Feature coming soon!)</p>
-{% endblock %}
+<style>
+    body, .analytics-container {
+        background: #3b82f6 !important;
+        color: #fff !important;
+    }
+    .analytics-container {
+        max-width: 1000px;
+        margin: 56px auto 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2em;
+    }
+    .card-section {
+        background: #2563eb;
+        border-radius: 1.5em;
+        box-shadow: 0 4px 32px rgba(59,130,246,0.10);
+        padding: 2em;
+        color: #fff;
+        border: 2px solid #3b82f6;
+        margin-bottom: 1em;
+    }
+    .section-title {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 1em;
+    }
+    .simulator-controls {
+        display: flex;
+        gap: 2em;
+        flex-wrap: wrap;
+        margin-bottom: 2em;
+    }
+    .simulator-control {
+        flex: 1;
+        min-width: 220px;
+        background: #3b82f6;
+        border-radius: 1em;
+        padding: 1em;
+        color: #fff;
+        border: 1px solid #2563eb;
+    }
+    .simulator-control label {
+        font-weight: 600;
+        margin-bottom: 0.5em;
+        display: block;
+        color: #fff;
+    }
+    .simulator-control input[type="range"] {
+        width: 100%;
+        accent-color: #2563eb;
+    }
+    .chart-area {
+        background: #3b82f6;
+        border-radius: 1em;
+        padding: 1.5em;
+        color: #fff;
+        border: 1px solid #2563eb;
+        margin-bottom: 1em;
+    }
+    .alert-log {
+        background: #3b82f6;
+        border-radius: 1em;
+        padding: 1.2em;
+        color: #fff;
+        border: 1px solid #2563eb;
+        margin-bottom: 1em;
+    }
+    .alert-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-bottom: 1em;
+        color: #fff;
+    }
+    .alert-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    .alert-list li {
+        margin-bottom: 0.7em;
+        font-size: 1em;
+        display: flex;
+        align-items: center;
+        gap: 0.7em;
+        color: #FFD700;
+    }
+    @media (max-width: 700px) {
+        .simulator-controls {
+            flex-direction: column;
+            gap: 1em;
+        }
+    }
+</style>
+<div class="analytics-container">
+    <div class="card-section">
+        <div class="section-title">What If Simulator</div>
+        <div class="simulator-controls">
+            <div class="simulator-control">
+                <label for="monthlySavings">Monthly Savings (₹)</label>
+                <input type="range" id="monthlySavings" min="1000" max="20000" step="500" value="5000" oninput="updateSimulator()">
+                <div id="monthlySavingsValue">₹5000</div>
+            </div>
+            <div class="simulator-control">
+                <label for="extraLoanPayment">Extra Loan Payment (₹)</label>
+                <input type="range" id="extraLoanPayment" min="0" max="10000" step="500" value="2000" oninput="updateSimulator()">
+                <div id="extraLoanPaymentValue">₹2000</div>
+            </div>
+        </div>
+        <div class="chart-area">
+            <canvas id="simulatorChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="card-section">
+        <div class="section-title">Predictive Forecast</div>
+        <div class="chart-area">
+            <canvas id="forecastChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="card-section">
+        <div class="section-title">Spending Breakdown</div>
+        <div class="chart-area">
+            <canvas id="breakdownChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="card-section">
+        <div class="alert-title">Anomaly & Alert Log</div>
+        <ul class="alert-list">
+            <li>⚠ 2024-06-01: Unusual spending detected (₹12,000 on Electronics)</li>
+            <li>⚠ 2024-05-20: Income dip (Salary delayed)</li>
+            <li>✅ 2024-05-10: Savings streak: 3 months</li>
+        </ul>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // What If Simulator Chart
+    function updateSimulator() {
+        var savings = parseInt(document.getElementById('monthlySavings').value);
+        var loan = parseInt(document.getElementById('extraLoanPayment').value);
+        document.getElementById('monthlySavingsValue').textContent = '₹' + savings;
+        document.getElementById('extraLoanPaymentValue').textContent = '₹' + loan;
+        // Demo data: simulate balance projection
+        var months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
+        var base = 120000;
+        var data = months.map((m, i) => base + (savings-loan)*i);
+        simulatorChart.data.datasets[0].data = data;
+        simulatorChart.update();
+    }
+    var ctxSim = document.getElementById('simulatorChart').getContext('2d');
+    var simulatorChart = new Chart(ctxSim, {
+        type: 'line',
+        data: {
+            labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+            datasets: [{
+                label: 'Projected Balance',
+                data: [120000, 123000, 126000, 129000, 132000, 135000],
+                borderColor: '#FFD700',
+                backgroundColor: 'rgba(255,215,0,0.1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: '#FFD700' } } },
+            scales: {
+                x: { ticks: { color: '#FFD700' }, grid: { color: '#FFD70022' } },
+                y: { ticks: { color: '#FFD700' }, grid: { color: '#FFD70022' } }
+            }
+        }
+    });
+    updateSimulator();
+
+    // Predictive Forecast Chart (demo)
+    var ctxForecast = document.getElementById('forecastChart').getContext('2d');
+    var forecastChart = new Chart(ctxForecast, {
+        type: 'line',
+        data: {
+            labels: ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+            datasets: [{
+                label: 'Forecasted Net Worth',
+                data: [120000, 122000, 124500, 127000, 130000, 133500],
+                borderColor: '#FFD700',
+                backgroundColor: 'rgba(255,215,0,0.1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: '#FFD700' } } },
+            scales: {
+                x: { ticks: { color: '#FFD700' }, grid: { color: '#FFD70022' } },
+                y: { ticks: { color: '#FFD700' }, grid: { color: '#FFD70022' } }
+            }
+        }
+    });
+
+    // Spending Breakdown Chart (demo)
+    var ctxBreakdown = document.getElementById('breakdownChart').getContext('2d');
+    var breakdownChart = new Chart(ctxBreakdown, {
+        type: 'pie',
+        data: {
+            labels: ['Food', 'Transport', 'Utilities', 'Entertainment', 'Other'],
+            datasets: [{
+                data: [12000, 6000, 4000, 7000, 3000],
+                backgroundColor: [
+                    '#FFD700', '#FFC300', '#FFB000', '#FFA000', '#FF9000'
+                ],
+                borderColor: '#000'
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: '#FFD700' } } }
+        }
+    });
+</script>
+{%endblock%}

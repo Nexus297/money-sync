@@ -2,9 +2,36 @@
 {% block title %}Profile | Money Sync{% endblock %}
 {% block content %}
 {% set show_sidebar = not (request.path in ['/', '/login', '/signup']) %}
+<style>
+  select {
+    background: #fff;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s;
+  }
+  select:focus {
+    border-color: #1d4ed8;
+  }
+  /* Style dropdown options for supported browsers */
+  select option {
+    background: #fff;
+    color: #2563eb;
+  }
+</style>
 <div class="container py-4 {% if show_sidebar %}with-sidebar{% else %}no-sidebar{% endif %}" style="max-width: 900px;">
-  <h2 class="mb-4">My Profile</h2>
-  <div class="card bg-dark text-light" style="max-width: 500px;">
+  <h2 class="mb-4" style="color:#fff;">My Profile</h2>
+</style>
+<style>
+  /* Ensure Logout link or button is white if present */
+  a.logout, .logout, .dropdown-logout, .dropdown-menu a[href*="logout"], .dropdown-menu .logout {
+    color: #fff !important;
+  }
+</style>
+  <div class="card" style="max-width: 500px; background: #fff; color: #2563eb;">
     <div class="card-body">
       <p><strong>Name:</strong> {{ user.name }}</p>
       <p><strong>Email:</strong> {{ user.email }}</p>

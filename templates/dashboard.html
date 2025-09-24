@@ -1,6 +1,171 @@
 {% extends 'base.html' %}
 {% block title %}Dashboard - Money Sync{% endblock %}
 {% block content %}
-<h2>Dashboard</h2>
-<p>Welcome to your dashboard. Here you can see your financial overview and recent activity.</p>
+<style>
+	.dashboard-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 80vh;
+		background: #3b82f6;
+		padding: 0;
+	}
+	.dashboard-title {
+		color: #fff;
+		font-size: 2.2rem;
+		font-weight: 700;
+		margin-bottom: 12px;
+		text-align: center;
+	}
+	.dashboard-summary {
+		display: flex;
+		gap: 2rem;
+		margin-bottom: 2rem;
+		justify-content: center;
+	}
+	.summary-card {
+		background: #2563eb;
+		color: #fff;
+		border-radius: 16px;
+		padding: 1.5rem 2.5rem;
+		box-shadow: 0 2px 12px rgba(59,130,246,0.10);
+		text-align: center;
+		min-width: 160px;
+	}
+	.summary-label {
+		font-size: 1.1rem;
+		margin-bottom: 0.5rem;
+		color: #e0e7ef;
+	}
+	.summary-value {
+		font-size: 1.7rem;
+		font-weight: 600;
+	}
+	.dashboard-controls {
+		margin-bottom: 2rem;
+		text-align: center;
+	}
+	.dashboard-controls label {
+		color: #fff;
+		margin-right: 8px;
+		font-weight: 500;
+	}
+	.dashboard-controls select {
+		background: #3b82f6;
+		color: #fff;
+		border: 1px solid #2563eb;
+		border-radius: 6px;
+		padding: 8px 12px;
+		font-size: 1rem;
+		outline: none;
+		transition: border 0.2s;
+	}
+	.dashboard-controls select:focus {
+		border-color: #2563eb;
+	}
+	.dashboard-chart-area {
+		background: #fff;
+		border-radius: 18px;
+		padding: 2rem 2rem 1rem 2rem;
+		box-shadow: 0 2px 16px rgba(59,130,246,0.10);
+		width: 100%;
+		max-width: 600px;
+		margin-bottom: 2rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+	.dashboard-chart-area h3 {
+		color: #2563eb;
+		margin-bottom: 1rem;
+		font-size: 1.2rem;
+		font-weight: 600;
+	}
+</style>
+
+<div class="dashboard-container" style="margin-top:56px;">
+	<div class="dashboard-title">Interactive Dashboard</div>
+	<div class="dashboard-summary">
+		<div class="summary-card">
+			<div class="summary-label">Total Balance</div>
+			<div class="summary-value" id="balance-value">₹1,20,000</div>
+		</div>
+		<div class="summary-card">
+			<div class="summary-label">Monthly Income</div>
+			<div class="summary-value" id="income-value">₹40,000</div>
+		</div>
+		<div class="summary-card">
+			<div class="summary-label">Monthly Expenses</div>
+			<div class="summary-value" id="expense-value">₹28,000</div>
+		</div>
+	</div>
+	<div class="dashboard-controls">
+		<label for="period-select">View:</label>
+		<select id="period-select">
+			<option value="week">This Week</option>
+			<option value="month" selected>This Month</option>
+			<option value="year">This Year</option>
+		</select>
+	</div>
+	<div class="dashboard-chart-area">
+		<h3>Spending Overview</h3>
+		<canvas id="dashboardChart" height="180"></canvas>
+	</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+	// Example data for demonstration
+	const chartData = {
+		week: {
+			labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+			data: [3000, 4200, 2500, 3800, 2900, 4100, 3200]
+		},
+		month: {
+			labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+			data: [12000, 9000, 11000, 10500]
+		},
+		year: {
+			labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+			data: [32000, 28000, 35000, 30000, 27000, 34000, 31000, 33000, 29000, 36000, 32000, 31000]
+		}
+	};
+	const ctx = document.getElementById('dashboardChart').getContext('2d');
+	let dashboardChart = new Chart(ctx, {
+		type: 'bar',
+		data: {
+			labels: chartData.month.labels,
+			datasets: [{
+				label: 'Expenses (₹)',
+				data: chartData.month.data,
+				backgroundColor: '#2563eb',
+				borderRadius: 8,
+				borderSkipped: false,
+			}]
+		},
+		options: {
+			responsive: true,
+			plugins: {
+				legend: { display: false },
+			},
+			scales: {
+				x: {
+					grid: { display: false },
+					ticks: { color: '#2563eb', font: { weight: 600 } }
+				},
+				y: {
+					grid: { color: '#e0e7ef' },
+					ticks: { color: '#2563eb', font: { weight: 600 } }
+				}
+			}
+		}
+	});
+	document.getElementById('period-select').addEventListener('change', function(e) {
+		const val = e.target.value;
+		dashboardChart.data.labels = chartData[val].labels;
+		dashboardChart.data.datasets[0].data = chartData[val].data;
+		dashboardChart.update();
+	});
+</script>
 {% endblock %}

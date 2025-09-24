@@ -4,22 +4,22 @@
 <style>
     .settings-container {
         max-width: 900px;
-        margin: 0 auto;
+        margin: 56px auto 0 auto;
         display: flex;
         flex-direction: column;
         gap: 2.5em;
     }
 
     .settings-card {
-        background: #181818;
+        background: #3b82f6;
         border-radius: 1.5em;
-        box-shadow: 0 4px 32px 0 rgba(0, 0, 0, 0.18);
+        box-shadow: 0 4px 32px 0 rgba(59,130,246,0.10);
         padding: 2.5em 2em 2em 2em;
         margin-bottom: 0;
         position: relative;
         overflow: hidden;
         transition: box-shadow 0.3s;
-        color: #ffd700;
+        color: #fff;
     }
 
     .settings-card:hover {
@@ -27,7 +27,7 @@
     }
 
     .settings-card h3 {
-        color: #ffd700;
+        color: #fff;
         margin-top: 0;
         margin-bottom: 1.2em;
         font-size: 1.35em;
@@ -53,7 +53,7 @@
     .profile-grid label {
         margin-bottom: 0.6em;
         font-weight: 500;
-        color: #ffd700;
+        color: #fff;
     }
 
     .profile-grid input {
@@ -70,25 +70,25 @@
     .settings-form input[type="email"],
     .settings-form input[type="number"],
     .settings-form input[type="password"] {
-        background: #111;
-        border: 1px solid #ffd700;
+        background: #2563eb;
+        border: 1px solid #3b82f6;
         border-radius: 1em;
         padding: 0.7em 1em;
-        color: #ffd700;
+        color: #fff;
         font-size: 1.05em;
         transition: background 0.4s, box-shadow 0.4s;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        box-shadow: 0 2px 8px rgba(59,130,246,0.10);
     }
 
     .settings-form input:focus {
-        background: #181818;
+        background: #3b82f6;
         outline: none;
-        box-shadow: 0 4px 24px 0 rgba(255, 215, 0, 0.18);
+        box-shadow: 0 4px 24px 0 rgba(59,130,246,0.18);
     }
 
     .settings-form button {
-        background: #ffd700;
-        color: #181818;
+        background: #2563eb;
+        color: #fff;
         border: none;
         border-radius: 1em;
         padding: 0.7em 2em;
@@ -97,16 +97,16 @@
         align-self: flex-end;
         margin-top: 0.5em;
         transition: background 0.3s, color 0.3s, box-shadow 0.4s;
-        box-shadow: 0 2px 12px rgba(255, 215, 0, 0.18);
+        box-shadow: 0 2px 12px rgba(59,130,246,0.18);
         position: relative;
         overflow: hidden;
     }
 
     .settings-form button:hover {
-        background: #181818;
-        color: #ffd700;
-        border: 1px solid #ffd700;
-        box-shadow: 0 0 24px 4px rgba(255, 215, 0, 0.18), 0 2px 12px rgba(0, 0, 0, 0.22);
+        background: #3b82f6;
+        color: #fff;
+        border: 1px solid #2563eb;
+        box-shadow: 0 0 24px 4px rgba(59,130,246,0.18), 0 2px 12px rgba(0, 0, 0, 0.22);
     }
 
     .delete-account-btn {
