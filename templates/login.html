@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Login / Signup - Money Sync{% endblock %}
+{% block content %}
+<h2>Login / Signup</h2>
+<form class="mb-3">
+  <div class="mb-3">
+    <label for="email" class="form-label">Email address</label>
+    <input type="email" class="form-control" id="email" placeholder="Enter email">
+  </div>
+  <div class="mb-3">
+    <label for="password" class="form-label">Password</label>
+    <input type="password" class="form-control" id="password" placeholder="Password">
+  </div>
+  <button type="submit" class="btn btn-primary">Login</button>
+  <button type="button" class="btn btn-secondary ms-2">Sign Up</button>
+</form>
+{% endblock %}

@@ -18,9 +18,62 @@ class User(db.Model):
 
 
 
+
+# Session management for login state
+from flask import session, redirect, url_for
+
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Dummy login: set session['user_id']
+        session['user_id'] = 1
+        return redirect(url_for('dashboard'))
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('home'))
+
+@app.route('/dashboard')
+def dashboard():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
+
+@app.route('/interactive')
+def interactive():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    return render_template('interactive.html')
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    if request.method == 'POST':
+        return upload_file()
+    return render_template('upload.html')
+
+@app.route('/analytics')
+def analytics():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    return render_template('analytics.html')
+
+@app.route('/settings')
+def settings():
+    if not session.get('user_id'):
+        return redirect(url_for('login'))
+    return render_template('settings.html')
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
 @app.route('/api/users', methods=['POST'])
 def add_user():

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Document Upload - Money Sync{% endblock %}
+{% block content %}
+<h2>Document Upload</h2>
+<form enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="formFile" class="form-label">Upload PDF or CSV</label>
+    <input class="form-control" type="file" id="formFile" accept=".pdf,.csv">
+  </div>
+  <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+{% endblock %}
