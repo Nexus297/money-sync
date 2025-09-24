@@ -1,8 +1,10 @@
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
+app.secret_key = 'replace-this-with-a-strong-secret-key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static', 'uploads')
@@ -17,6 +19,28 @@ class User(db.Model):
     income = db.Column(db.Float, nullable=False)
 
 
+# Signup route and logic
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        age = request.form.get('age')
+        income = request.form.get('income')
+        password = request.form.get('password')
+        # Check if user already exists
+        existing = User.query.filter_by(email=email).first()
+        if existing:
+            return render_template('signup.html', error='Email already registered.')
+        # Add user (no password storage for demo, add if needed)
+        user = User(name=name, email=email, age=int(age), income=float(income))
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('signup.html')
+
+
+
 
 
 # Session management for login state
@@ -29,8 +53,15 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Dummy login: set session['user_id']
-        session['user_id'] = 1
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            session['user_id'] = user.id
+            return redirect(url_for('dashboard'))
+        else:
+            return render_template('login.html', error='Invalid email or password.')
+    if session.get('user_id'):
         return redirect(url_for('dashboard'))
     return render_template('login.html')
 
